@@ -1,0 +1,254 @@
+Go for Python Programmers
+21:00 07 Oct 2013
+
+Brian Dorsey
+Gopher Newbie
+(Developer Relations, Google Cloud Platform)
+http://briandorsey.info
+@briandorsey
+http://golang.org
+
+
+* this is a multi-user-group event!
+- Seattle Python Interest Group
+- Seattle Django Users Group
+- Seattle Go meetup
+- Seattle Google Developer Group
+
+
+* learn Go, it's worth your time
+- Go itself
+- complements Python well
+- brain expanding (at least it was for me!)
+
+
+* agenda
+- context
+- Go is simple
+- Go is awesome
+- a Python perspective on Go
+- mistakes we (I) make
+- problems people have with Go
+- next steps
+- Q/A
+
+
+* context - me, a Go learning project, and rants
+- long time Python user; Go newbie
+- did a Go learning project
+- ranted about how great the experience was
+- "You should do a talk about that."
+- this is that talk (finally!)
+- you won't learn Go from this talk, you will be *motivated* to learn Go
+* disclaimer
+- long time Python user; *Go*newbie*
+- this is a personal talk, I don't actually represent the Go team, or Google tonight
+- all mistakes are my own
+- plus: my enthusiasm is genuine
+- plus: we do have a real expert and representative from the Go team here: Francesc!
+* partisci
+- did a Go learning project: partisci = *part* ially    omn *isci* ent
+- the miracle of hindsight shows: this is a terrible name
+* however... it is easy to find. :)
+.image python-go/partisci-search.png
+* what is Partisci?
+- Where is your software installed? Is version X still in use anywhere?
+- Partisci can answer these questions:
+    - What hosts is application A installed on?
+    - Which versions of application A are active?
+    - Is version V of application A still active anywhere?
+    - Which hosts are runinng version V of application A?
+    - When did application A last update? (from host H?)
+    - What applications are installed on host H?
+- Partisci answers these questions by collecting updates from your programs and providing a REST API to access the data.
+- [[https://github.com/briandorsey/partisci]], [[http://briandorsey.github.io/partisci/]]
+* what is Partisci?
+- listens for update packets via UDP, stores in-memory
+    {
+        "app" : "Application Name",
+        "ver" : "1.2.3dev",
+        "host" : "hostname",
+        "instance" : 0,
+    }
+- provides an HTTP/RESTish API for queries:
+.image python-go/partisci-api.png
+* small network servers are great learning projects!
+
+
+* Go is relentlessly simple - by design
+* few keywords
+    break        default      func         interface    select
+    case         defer        go           map          struct
+    chan         else         goto         package      switch
+    const        fallthrough  if           range        type
+    continue     for          import       return       var
+* datatypes
+- boolean
+- int (`int`, `int32`, `int64`, `byte`, `rune`, ...)
+- float
+- complex
+- string - immutable sequence of bytes, utf8 by convention
+* complex types
+- pointer - a typed reference to a value
+- array - fixed length sequence of typed elements
+- slice - window into part of an array
+- map - typed key/value
+- channel - typed, optionally directional and/or buffered
+- struct - sequence of named and typed elements
+* functions, interfaces
+- functions - yes, first class types! full signature
+- interface - a method set (functions with recievers)
+* variables
+- variables are statically typed
+.code python-go/partisci/version.go /START VERSION OMIT/,/END VERSION OMIT/ HLapp
+- ... but inferred when ommitted!
+.code python-go/partisci/version.go /func appIDToID/,/^}/
+- variables are passed by value; use pointer to avoid copy
+- variables can be of any type, including `interface`
+- default zero values - no unitialized variables (no None!)
+* control flow
+- if
+- for
+- switch
+- select - like switch for channels
+* error handling
+        err := s.Update(v)
+        if err != nil {
+            // handle error
+        }
+- error handling is part of the normal flow of the code
+- errors are not "exceptional"
+* interfaces - feels like duck typing
+* concurrency
+.play python-go/fib.go /fib/,
+- any blocking function can be used asynchronously
+- the benefits of async (Twisted, NodeJS) without the callbacks
+* modern stdlib
+
+
+* Go awesomeness
+* tooling!
+* Constraints and Creativity (or anti-bikeshedding tools)
+- TOOWTDI
+- `go fmt`
+- `go doc`
+- `go test` (unit, perf, doc examples)
+- package file layout
+- VCS integration (`go get`)
+- local comprehension
+    "In Go, the code does exactly what it says on the page." — Andrew Gerrand
+* godoc
+- API docs generated from comments
+- API usage examples are *unit*tests* with a specific name
+- [[http://godoc.org/github.com/briandorsey/partisci/memstore]]
+.image python-go/godoc-memstore.png
+* godoc - examples
+    func ExampleMemoryStore_Update() {
+        v := version.Version{App: "app1", Ver: "1.2.3", Host: "host1.example.com"}
+        err := s.Update(v)
+        if err != nil {
+            // handle error
+        }
+    }
+- turns into:
+.image python-go/godoc-example.png
+* godoc.golang.org
+.image python-go/partisci-godoc.png
+* marshalling via struct tags and reflection
+.code python-go/partisci/version.go /type Version/,/^}/
+.code python-go/partisci/version.go /START JSON OMIT/,/END JSON OMIT/
+* Go is opinonated
+- give the go way a try
+- it will probably feel weird at first
+- "There isn't enough here, but I'll try... <later> It works!"
+
+
+* a Python perspective
+* variable passing
+- Go: pass a copy
+- Python: namespaced references to objects (mutability determines encapsulation)
+- variables are passed by value; use pointer to avoid copy
+- `map`, `slice`, and `chan` contain pointers to structures
+* variable passing
+.play python-go/var.go /double/,
+* build & distribution!
+- static linking
+- single file binaries
+- cross compilation (OS & CPU architecture!)
+* about those tools
+- we have similar things in the Python world
+- ... so, so many of them. :(
+- we understand TOOWTDI at the language level, Go takes it further
+
+
+* easy mistakes to make coming from Python
+* use slices not arrays
+- arrays are value types
+- they get copied when passed to a function
+- full copy if you want to add one element
+- you almost always want slices: [[http://blog.golang.org/go-slices-usage-and-internals]]
+* error handling
+- initial strangeness
+- forgetting to do it!
+- neglecting to design it into functions
+- just have to do it
+- think through all cases, keep logic on the page
+* naming
+- conventions different - need to retrain the fingers
+- capitalization for public/private - easy to forget
+    type Version struct {
+        app         string    `json:"app"`
+        ver         string    `json:"ver"`
+        host        string    `json:"host"`
+    }
+- vs.
+    type Version struct {
+        App         string    `json:"app"`
+        Ver         string    `json:"ver"`
+        Host        string    `json:"host"`
+    }
+
+* issues
+* error handling
+- me: "I think I've got a pretty good handle on error handling."
+- code review comments:
+  "Probably a good idea adding more information to these errors."
+  "You never return any error"
+  "Don't need that error"
+  "Return an error instead."
+  "Probably easier to handle errors outside of this function"
+  "Instead of having this struct you could also use an anonymous one:
+  errRes := struct{Error string `json:"error"`}{message}"
+* object orientation
+- "favor composition over inheritance"
+- in Go it is favored so much, inheritance is not an option. ;)
+* JSON parsing?
+* no generics
+- you're going to write some helper functions
+* concise
+- sometimes it takes a while to figure out the docs/APIs
+* inconsistencies - data type initialization
+* versioning
+
+
+* learn Go, it's worth your time
+- Go itself
+- complements Python well
+- brain expanding (at least it was for me!)
+- relentlessly pragmatic and concise
+- Go is opinonated. Give the go way a try, it works
+- takes me longer to write code, but I have more confidence in the code I write
+
+
+* next steps
+- Drinks! Conversation! (at the Red Door, across the street from PCC)
+- Go tour: http://tour.golang.org/
+- http://play.golang.org/
+- install and play with it!
+- build a command line app, replace a service
+- build a Google App Engine app or service
+- Google Cloud credits - code: *brdo-in*   https://cloud.google.com/resources/starterpack/
+- Offset: Go's conncurrency model in Python: [[https://github.com/benoitc/offset]]
+
+
+* Thank you! Q/A
